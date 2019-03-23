@@ -3,38 +3,38 @@ cmake_minimum_required(VERSION 3.2)
 
 project(NodeEditor CXX)
 
-set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
-set(CMAKE_DISABLE_SOURCE_CHANGES  ON)
+#set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+#set(CMAKE_DISABLE_SOURCE_CHANGES  ON)
 
-get_directory_property(_has_parent PARENT_DIRECTORY)
-if(_has_parent)
-  set(is_root_project OFF)
-else()
-  set(is_root_project ON)
-endif()
+#get_directory_property(_has_parent PARENT_DIRECTORY)
+#if(_has_parent)
+#  set(is_root_project OFF)
+#else()
+# set(is_root_project ON)
+#endif()
 
-set(NE_DEVELOPER_DEFAULTS "${is_root_project}" CACHE BOOL "Turns on default settings for development of NodeEditor")
+#set(NE_DEVELOPER_DEFAULTS "${is_root_project}" CACHE BOOL "Turns on default settings for development of NodeEditor")
 
-option(BUILD_TESTING "Build tests" "${NE_DEVELOPER_DEFAULTS}")
-option(BUILD_EXAMPLES "Build Examples" "${NE_DEVELOPER_DEFAULTS}")
+option(BUILD_TESTING "Build tests" ON)
+option(BUILD_EXAMPLES "Build Examples" ON)
 option(BUILD_SHARED_LIBS "Build as shared library" ON)
 option(NE_FORCE_TEST_COLOR "Force colorized unit test output" OFF)
 
 enable_testing()
 
-if(NE_DEVELOPER_DEFAULTS)
-  set(CMAKE_CXX_STANDARD 14)
-  set(CMAKE_CXX_EXTENSIONS OFF)
+#if(NE_DEVELOPER_DEFAULTS)
+  #set(CMAKE_CXX_STANDARD 14)
+  #set(CMAKE_CXX_EXTENSIONS OFF)
 
-  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
-  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
-  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
-endif()
+  #set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
+  #set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
+  #set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
+#endif()
 
 add_subdirectory(external)
 
 # Find the QtWidgets library
-find_package(Qt5 5.3 COMPONENTS
+find_package(Qt5 COMPONENTS
              Core
              Widgets
              Gui
@@ -72,13 +72,15 @@ set(CPP_SOURCE_FILES
 
 # If we want to give the option to build a static library,
 # set BUILD_SHARED_LIBS option to OFF
-add_library(nodes
-  ${CPP_SOURCE_FILES}
-  ${RESOURCES}
-)
-add_library(NodeEditor::nodes ALIAS nodes)
+#add_library(nodes
+#  ${CPP_SOURCE_FILES}
+#  ${RESOURCES}
+#)
+#add_library(NodeEditor::nodes ALIAS nodes)
 
-target_include_directories(nodes
+add_library(NodeEditor ${CPP_SOURCE_FILES} ${RESOURCES})
+
+target_include_directories(NodeEditor
   PUBLIC
     $<INSTALL_INTERFACE:include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -87,7 +89,7 @@ target_include_directories(nodes
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/nodes/internal>
 )
 
-target_link_libraries(nodes
+target_link_libraries(NodeEditor
   PUBLIC
     Qt5::Core
     Qt5::Widgets
@@ -95,7 +97,7 @@ target_link_libraries(nodes
     Qt5::OpenGL
 )
 
-target_compile_definitions(nodes
+target_compile_definitions(NodeEditor
   PUBLIC
     ${Qt5Widgets_DEFINITIONS}
     NODE_EDITOR_SHARED
@@ -105,24 +107,24 @@ target_compile_definitions(nodes
     QT_NO_KEYWORDS
 )
 
-target_compile_options(nodes
+target_compile_options(NodeEditor
   PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:/W4 /wd4127 /EHsc>
     $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra>
     $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra>
 )
 
-target_compile_features(nodes
+target_compile_features(NodeEditor
   PUBLIC
     cxx_generic_lambdas # Require C++14
 )
 
-set_target_properties(nodes
-  PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-)
+#set_target_properties(NodeEditor
+#  PROPERTIES
+#    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
+#    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
+#    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+#)
 
 ######
 # Moc
@@ -132,58 +134,67 @@ file(GLOB_RECURSE HEADERS_TO_MOC include/nodes/internal/*.hpp)
 
 qt5_wrap_cpp(nodes_moc
     ${HEADERS_TO_MOC}
-  TARGET nodes
+  TARGET NodeEditor
   OPTIONS --no-notes # Don't display a note for the headers which don't produce a moc_*.cpp
 )
 
-target_sources(nodes PRIVATE ${nodes_moc})
+target_sources(NodeEditor PRIVATE ${nodes_moc})
 
 ###########
 # Examples
 ##
 
-if(BUILD_EXAMPLES)
-  add_subdirectory(examples)
-endif()
+#if(BUILD_EXAMPLES)
+  #add_subdirectory(examples)
+#endif()
 
 ##################
 # Automated Tests
 ##
 
 if(BUILD_TESTING)
-  add_subdirectory(test)
+  #add_subdirectory(test)
 endif()
+
+
+
+
+
+
+
+
+
 
 ###############
 # Installation
 ##
 
-include(GNUInstallDirs)
+#include(GNUInstallDirs)
 
-set(INSTALL_CONFIGDIR ${CMAKE_INSTALL_LIBDIR}/cmake/NodeEditor)
+#set(INSTALL_CONFIGDIR ${CMAKE_INSTALL_LIBDIR}/cmake/NodeEditor)
 
-install(TARGETS nodes
-  EXPORT NodeEditorTargets
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-)
+#install(TARGETS nodes
+#  EXPORT NodeEditorTargets
+#  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#)
 
-install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+#install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-install(EXPORT NodeEditorTargets
-  FILE NodeEditorTargets.cmake
-  NAMESPACE NodeEditor::
-  DESTINATION ${INSTALL_CONFIGDIR}
-)
+#install(EXPORT NodeEditorTargets
+#  FILE NodeEditorTargets.cmake
+#  NAMESPACE NodeEditor::
+#  DESTINATION ${INSTALL_CONFIGDIR}
+#)
 
-include(CMakePackageConfigHelpers)
+#include(CMakePackageConfigHelpers)
 
-configure_package_config_file(${CMAKE_CURRENT_LIST_DIR}/cmake/NodeEditorConfig.cmake.in
-  ${CMAKE_CURRENT_BINARY_DIR}/NodeEditorConfig.cmake
-  INSTALL_DESTINATION ${INSTALL_CONFIGDIR}
-)
+#configure_package_config_file(${CMAKE_CURRENT_LIST_DIR}/cmake/NodeEditorConfig.cmake.in
+#  ${CMAKE_CURRENT_BINARY_DIR}/NodeEditorConfig.cmake
+#  INSTALL_DESTINATION ${INSTALL_CONFIGDIR}
+#)
 
-install(FILES
-  ${CMAKE_CURRENT_BINARY_DIR}/NodeEditorConfig.cmake
-  DESTINATION ${INSTALL_CONFIGDIR}
-)
+#install(FILES
+#  ${CMAKE_CURRENT_BINARY_DIR}/NodeEditorConfig.cmake
+#  DESTINATION ${INSTALL_CONFIGDIR}
+#)
