@@ -17,7 +17,7 @@ project(NodeEditor CXX)
 
 option(BUILD_TESTING "Build tests" ON)
 option(BUILD_EXAMPLES "Build Examples" ON)
-option(BUILD_SHARED_LIBS "Build as shared library" ON)
+#option(BUILD_SHARED_LIBS "Build as shared library" ON)
 option(NE_FORCE_TEST_COLOR "Force colorized unit test output" OFF)
 
 enable_testing()
@@ -78,7 +78,7 @@ set(CPP_SOURCE_FILES
 #)
 #add_library(NodeEditor::nodes ALIAS nodes)
 
-add_library(NodeEditor ${CPP_SOURCE_FILES} ${RESOURCES})
+add_library(NodeEditor STATIC ${CPP_SOURCE_FILES} ${RESOURCES})
 
 target_include_directories(NodeEditor
   PUBLIC
