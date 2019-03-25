@@ -4,9 +4,14 @@
 #include "OperatingSystem.hpp"
 
 #ifdef NODE_EDITOR_PLATFORM_WINDOWS
-#  define NODE_EDITOR_EXPORT __declspec(dllexport)
-#  define NODE_EDITOR_IMPORT __declspec(dllimport)
-#  define NODE_EDITOR_LOCAL
+#	ifdef NODE_EDITOR_DYNAMIC_LIBRARY
+#		define NODE_EDITOR_EXPORT __declspec(dllexport)
+#  		define NODE_EDITOR_IMPORT __declspec(dllimport)
+#	else
+#		define NODE_EDITOR_EXPORT
+#  		define NODE_EDITOR_IMPORT
+#	endif
+#  	define NODE_EDITOR_LOCAL
 #elif                                                           \
   NODE_EDITOR_COMPILER_GNU_VERSION_MAJOR >= 4                         || \
   defined (NODE_EDITOR_COMPILER_CLANG)
